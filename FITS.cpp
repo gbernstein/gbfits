@@ -74,12 +74,8 @@ FitsFile::~FitsFile() {
   HMap::iterator j = usemap->find(getFilename());
   if (j==usemap->end()) {
     ostringstream oss;
-    oss << "Could not find file <" << getFilename()
-	<< "> on FitsHandle lists in ~FitsFile()";
-    if (std::uncaught_exception())
-      cerr << oss.str() << endl;
-    else
-      throw FITSError(oss.str());
+    cerr << "ERROR: Could not find file <" << getFilename()
+	 << "> on FitsHandle lists in ~FitsFile()";
   }
   // Decrement link count
   --(j->second.second);
@@ -139,10 +135,12 @@ FitsioHandle::~FitsioHandle() {
     closeFile();
     // Find and remove ourself from the list of open files
     lptr me = find(openFiles.begin(), openFiles.end(), this);
-    if (me==openFiles.end() && !std::uncaught_exception()) 
-      throw FITSError("Did not find open file <" + filename 
-		      + "> in FitsioHandle::openFiles!");
-    openFiles.erase(me);
+    if (me==openFiles.end()) {
+      cerr << "ERROR:  Did not find open file <" + filename 
+	+ "> in FitsioHandle::openFiles!" << endl;;
+    } else {
+      openFiles.erase(me);
+    }
   }
 }
 
