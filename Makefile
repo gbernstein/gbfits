@@ -25,7 +25,7 @@ endif
 
 # Rule for compilation:
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $^ -o $@
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 # External directories where we'll need to clean/build dependents
 EXTDIRS = $(GBUTIL_DIR)
