@@ -115,9 +115,13 @@ ImageData<T>::ImageData(const Bounds<int> inBounds,
 
 // Destructor:  Be sure to free all memory
 template <class T>
-ImageData<T>::~ImageData() noexcept(false) {
-  if (!children.empty() ) 
-    throw ImageError("Destroying ImageData that still has children");
+ImageData<T>::~ImageData() {
+  if (!children.empty() ) {
+    // Do not throw from within destructor, just print error, quit
+    cerr << "ERROR: ImageData::~ImageData for object that still has children"
+	 <<endl;
+    exit(1);
+  }
   if (parent) parent->unlinkChild(this);
   discardArrays();
 }
@@ -379,11 +383,11 @@ Image<T>::operator/(const Image<T> rhs) const {
 }
 
 // instantiate for expected types
-template class Image<double>;
-template class Image<float>;
-template class Image<int>;
-template class Image<short>;
-template class ImageData<double>;
-template class ImageData<float>;
-template class ImageData<int>;
-template class ImageData<short>;
+template class img::Image<double>;
+template class img::Image<float>;
+template class img::Image<int>;
+template class img::Image<short>;
+template class img::ImageData<double>;
+template class img::ImageData<float>;
+template class img::ImageData<int>;
+template class img::ImageData<short>;

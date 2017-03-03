@@ -290,7 +290,7 @@ FitsTable::createColumns(img::TableData* tptr,
     /**cerr << "createColumn for <" << colNames[i] 
 	     << "> column number " << colNumbers[i]
 	     << " with dtype " << dt 
-	     << " repeat " << repeat << " width " << width << endl; /***/
+	     << " repeat " << repeat << " width " << width << endl; ***/
     switch (dt) {
     case FITS::Tbit:
       // I will convert bit to boolean on input

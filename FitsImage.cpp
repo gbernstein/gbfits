@@ -348,7 +348,7 @@ FitsImage<T>::readFromDisk(const Bounds<int> b) const {
   return d;
 }
 
-template class FitsImage<double>;
-template class FitsImage<float>;
-template class FitsImage<int>;
-template class FitsImage<short>;
+template class img::FitsImage<double>;
+template class img::FitsImage<float>;
+template class img::FitsImage<int>;
+template class img::FitsImage<short>;
