@@ -149,7 +149,9 @@ namespace img {
     ImageData<T>* readFromDisk(const Bounds<int> b) const;
     // Replace disk contents with data.  If retypeDisk=true, change
     // datatype of FITS HDU.  Disk image acquires shape of data.
-    // Exception thrown if data bounds do not start at (1,1).
+    // Exception thrown if data bounds do not start at (1,1),
+    // though if data bounds are undefined (null image), we're
+    // instead going to write a 0-dimensional image to the file.
     void writeToDisk(const ImageData<T>* data, bool retypeDisk);
   };
 

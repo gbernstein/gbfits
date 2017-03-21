@@ -26,6 +26,11 @@ ImageData<T>::clearChanged() {
 // build or destroy the data array
 template <class T>
 void ImageData<T>::acquireArrays(Bounds<int> inBounds) {
+  if (!inBounds) {
+    // Do not allocate any space if the input bounds are undefined
+    return;
+  }
+
   bounds = inBounds;
 
   int	xsize, ysize;
@@ -35,7 +40,14 @@ void ImageData<T>::acquireArrays(Bounds<int> inBounds) {
   
   dataArray  = new T[xsize*ysize]; 
 
-  rPtrs = new T*[ysize]; //??? also be sure to delete dataArray if this fails
+  try {
+    rPtrs = new T*[ysize];
+  } catch (std::bad_alloc& b) {
+    //Delete dataArray if row-pointers allocation fails
+    delete [] dataArray;
+    dataArray = nullptr;
+    throw;  // Rethrow bad_alloc
+  }
   rowPointers = rPtrs - bounds.getYMin();
   dptr = dataArray - bounds.getXMin();
   for (int i=bounds.getYMin(); i<=bounds.getYMax(); i++) {
@@ -60,31 +72,41 @@ ImageData<T>::discardArrays() {
       for (int i=bounds.getYMin(); i<=bounds.getYMax(); i++) {
 	dptr = rowPointers[i]+bounds.getXMin();
 	delete [] dptr;
+	rowPointers[i] = nullptr;
       }
     }
+    ownDataArray = false;
   }
   if (ownRowPointers) {
     // Free the row pointer array:
     T **rptr;
     rptr = rowPointers + bounds.getYMin();
     delete [] rptr;
+    rowPointers = nullptr;
+    ownRowPointers = false;
   }
 }
 
 // image with unspecified data values:
 template <class T>
-ImageData<T>::ImageData(const Bounds<int> inBounds): parent(0),
+ImageData<T>::ImageData(const Bounds<int> inBounds): rowPointers(nullptr),
+						     parent(nullptr),
 						     isAltered(false),
-						     lock(false) {
+						     lock(false),
+						     ownDataArray(false),
+						     ownRowPointers(false) {
   acquireArrays(inBounds);
 }
 
 // image filled with a scalar:
 template <class T>
 ImageData<T>::ImageData(const Bounds<int> inBounds, 
-			const T initValue): parent(0),
+			const T initValue): rowPointers(nullptr),
+					    parent(nullptr),
 					    isAltered(false),
-					    lock(false) {
+					    lock(false),
+					    ownDataArray(false),
+					    ownRowPointers(false) {
   acquireArrays(inBounds);
   // Initialize the data
   Assert(isContiguous);
@@ -177,11 +199,15 @@ ImageData<T>* ImageData<T>::subimage(const Bounds<int> bsub) const {
   return child;
 }
   
-// Create a new subimage that is duplicate of this ones data
+// Create a new (sub)image that is duplicate of this ones data
 template <class T>
 ImageData<T>* 
 ImageData<T>::duplicate() const {
   ImageData<T>* dup = new ImageData<T>(bounds);
+  // If the bounds are undefined and this is null image, we are done
+  if (!bounds)
+    return dup;
+  
   Assert(dup->isContiguous);
 
   // Copy the data from old array to new array
@@ -240,6 +266,8 @@ ImageData<T>::copyFrom(const ImageData<T>& rhs) {
   resize(rhs.getBounds());
 
   // Copy the data from old array to new array
+  if (!bounds) return;  // but quit if there is no data to copy.
+  
   T  *dptr;
   const T* inptr;
   long int xsize = bounds.getXMax() - bounds.getXMin() + 1;
@@ -264,6 +292,9 @@ ImageData<T>::shift(int x0, int y0) {
 		     " in use.");
   if (parent)
     throw ImageError("Attempt to ImageData::shift() for a subimage");
+
+  if (!bounds)
+    throw ImageError("Attempt to ImageData::shift() with undefined bounds");
 
   int dx = x0 - bounds.getXMin();
   int dy = y0 - bounds.getYMin();

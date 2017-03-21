@@ -206,13 +206,18 @@ FitsImage<T>::extract() const {
 template <class T>
 Image<T>
 FitsImage<T>::extract(Bounds<int> b) const {
-  if (!getBounds().includes(b))
+  if (!getBounds().includes(b) && (getBounds() || b)) {
+    // Problem if requested area isn't in the stored area,
+    // but not a problem if both are undefined (i.e. null images)
     FormatAndThrow<FITSError>() << "Extraction bounds [" << b
 				<< "] outside FitsImage bounds [" << getBounds()
 				<< "]";
+  }
   Header* hh = header()->duplicate();
   ImageData<T>* dd=0;
-  if (dptr) {
+  if (!b) {
+    dd = new ImageData<T>(b); // Degenerate bounds, null image
+  } else if (dptr) {
     if (getBounds()==b) {
       dd = dptr->duplicate();
     } else {
@@ -261,6 +266,21 @@ void
 FitsImage<T>::writeToDisk(const ImageData<T>* data, bool retypeDisk) {
   Assert(isWriteable());
   Bounds<int> b = data->getBounds();
+  if (!b) {
+    // Degenerate image, write a zero-dimensional image extension
+    // of selected type
+    nativeType = FITSTypeOf<T>();
+    // Resize the extension
+    diskBounds = b;
+    int naxis(0);
+    long naxes[MAX_IMAGE_DIMENSIONS];
+    int bitpix = DataType_to_Bitpix(nativeType);
+    int status = moveTo();
+    fits_resize_img(fptr(), bitpix, naxis, naxes, &status);
+    checkCFITSIO(status, "Error making 0-dim image extension in " + getFilename());
+    return;
+  }
+    
   if (b != diskBounds || retypeDisk) {
     // Assign native type to disk file if it was empty or if commanded:
     if (retypeDisk || !diskBounds) nativeType = FITSTypeOf<T>();

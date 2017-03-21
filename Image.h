@@ -17,7 +17,8 @@
  *
  * The ImageData<T> class should never be needed by the user.  It
  * is used by FITSImage class (and maybe other disk image formats) 
- * that reads/writes Image objects from disk.
+ * that reads/writes Image objects from disk.  ImageData does not
+ * allocate any memory when created with undefined Bounds.
  *
  * All specifications of pixel areas use Bounds<int> objects - see Bounds.h.
  * Bounds<int>(x1,x2,y1,y2) is usual constructor, Bounds<int>() creates a
