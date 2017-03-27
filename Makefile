@@ -30,7 +30,8 @@ endif
 # External directories where we'll need to clean/build dependents
 EXTDIRS = $(GBUTIL_DIR)
 
-OBJ = FITS.o Header.o Hdu.o FitsTable.o FTable.o FTableExpression.o Image.o FitsImage.o
+OBJ = FITS.o Header.o Hdu.o FitsTable.o FTable.o FTableExpression.o \
+	Image.o FitsImage.o HeaderFromStream.o
 SRC = $(OBJ:%.o=%.cpp)
 
 EXTOBJ := $(GBUTIL_DIR)/StringStuff.o $(GBUTIL_DIR)/Expressions.o
