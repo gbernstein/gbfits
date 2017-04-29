@@ -18,7 +18,8 @@ endif
 
 # Collect the includes and libraries we need
 ifdef GBUTIL_DIR
-INCLUDES += -I $(GBUTIL_DIR)
+INCLUDES += -I $(GBUTIL_DIR)/include
+GBUTIL_OBJ := $(GBUTIL_DIR)/obj
 else
 $(error Require GBUTIL_DIR in environment)
 endif
@@ -34,7 +35,7 @@ OBJ = FITS.o Header.o Hdu.o FitsTable.o FTable.o FTableExpression.o \
 	Image.o FitsImage.o HeaderFromStream.o
 SRC = $(OBJ:%.o=%.cpp)
 
-EXTOBJ := $(GBUTIL_DIR)/StringStuff.o $(GBUTIL_DIR)/Expressions.o
+EXTOBJ := $(GBUTIL_OBJ)/StringStuff.o $(GBUTIL_OBJ)/Expressions.o
 
 all: $(OBJ)
 
