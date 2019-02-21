@@ -92,6 +92,17 @@ TableData::listColumns() const {
   return out;
 }
 
+bool
+TableData::hasColumn(const string& colname) const {
+  for (const_iterator i = begin();
+       i != end();
+       ++i) {
+    if (stringstuff::nocaseEqual((*i)->name(),colname))
+      return true;
+  }
+  return false;
+}
+
 const ColumnBase* 
 TableData::constColumn(string colname) const {
   Index::const_iterator i=columns.find(colname);

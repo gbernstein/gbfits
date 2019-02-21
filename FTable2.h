@@ -3,7 +3,7 @@
 // by the user.
 
 // Define RANGE_CHECK to have row arguments always checked:
-//#define RANGE_CHECK
+#define RANGE_CHECK //???
 
 #ifndef FTABLE2_H
 #define FTABLE2_H
@@ -498,6 +498,7 @@ namespace img {
     ColumnBase* operator[](string colname);
 
     vector<string> listColumns() const;
+    bool hasColumn(const string& colname) const;  // Case-insensitive
 
     // ***** Add / remove columns:
 
@@ -570,7 +571,7 @@ namespace img {
     // Access single element (copy created)
     template <class T>
     void readCell(T& value, string columnName, long row) const {
-      rangeCheck(row);
+      rangeCheck(row,columnName);
       const ScalarColumn<T>* col = dynamic_cast<const ScalarColumn<T>*> ((*this)[columnName]);
       if (!col) throw FTableError("Type mismatch reading column " + columnName);
       col->readCell(value, row);
@@ -580,8 +581,8 @@ namespace img {
     template <class T>
     void readCells(vector<T>& values, string columnName, 
 		   long rowStart=0, long rowEnd=-1) const {
-      rangeCheck(rowStart);
-      if (rowEnd>0) rangeCheck(rowEnd-1);
+      rangeCheck(rowStart,columnName);
+      if (rowEnd>0) rangeCheck(rowEnd-1,columnName);
       const ScalarColumn<T>* col = dynamic_cast<const ScalarColumn<T>*> ((*this)[columnName]);
       if (!col) {
 	const ScalarColumn<int>* col2 = dynamic_cast<const ScalarColumn<int>*> ((*this)[columnName]);
@@ -602,7 +603,7 @@ namespace img {
     // Writing single or multiple cells:
     template <class T>
     void writeCell(const T& value, string columnName, long row) {
-      if (row<0) rangeCheck(row);
+      if (row<0) rangeCheck(row,columnName);
       checkLock("writeCell()");
       ScalarColumn<T>* col = dynamic_cast<ScalarColumn<T>*> ((*this)[columnName]);
       if (!col) throw FTableError("Type mismatch writing column " + columnName);
@@ -612,7 +613,7 @@ namespace img {
 
     template <class T>
     void writeCells(const vector<T>& values, string columnName, long rowStart=0) {
-      if (rowStart<0) rangeCheck(rowStart);
+      if (rowStart<0) rangeCheck(rowStart,columnName);
       checkLock("writeCells()");
       ScalarColumn<T>* col = dynamic_cast<ScalarColumn<T>*> ((*this)[columnName]);
       if (!col) throw FTableError("Type mismatch writing column " + columnName);
@@ -623,7 +624,7 @@ namespace img {
     // Specialization to recognize array-valued Cells
     template <class T>
     void writeCell(const vector<T>& value, string columnName, long row) {
-      if (row<0) rangeCheck(row);
+      if (row<0) rangeCheck(row,columnName);
       checkLock("writeCell()");
       ArrayColumn<T>* col = dynamic_cast<ArrayColumn<T>*> ((*this)[columnName]);
       if (!col) throw FTableError("Type mismatch writing column " + columnName);
@@ -633,7 +634,7 @@ namespace img {
 
     template <class T>
     void writeCells(const vector<vector<T> >& values, string columnName, long rowStart=0) {
-      if (rowStart<0) rangeCheck(rowStart);
+      if (rowStart<0) rangeCheck(rowStart,columnName);
       checkLock("writeCells()");
       ArrayColumn<T>* col = dynamic_cast<ArrayColumn<T>*> ((*this)[columnName]);
       if (!col) throw FTableError("Type mismatch writing column " + columnName);

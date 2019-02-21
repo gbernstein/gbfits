@@ -134,6 +134,9 @@ namespace img {
     // Report names of columns
     vector<string> listColumns() const {return D->listColumns();}
 
+    // Case-insensitive column name search
+    bool hasColumn(const string& colname) const {return D->hasColumn(colname);}
+
     // Get repeat count of a column's cell: 
     // 1 for scalar, -1 for variable-length, >=0 for fixed.
     long repeat(string columnName) const {return (*D)[columnName]->repeat();}
