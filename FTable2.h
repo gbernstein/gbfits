@@ -166,7 +166,7 @@ namespace img {
 	v.insert(v.begin()+insertBeforeRow, insertNumber, DT());
       return v.size();
     }
-
+    
   };
 
   // Specialization for string-valued scalar arrays, check length as needed
@@ -359,7 +359,7 @@ namespace img {
       v.resize(in.size());
       for (long i=0; i<in.size(); i++)
 	writeCell(in[i], i);
-      }
+    }
 
     virtual ColumnBase* duplicate() const {return new FixedArrayColumn(*this);}
 
@@ -399,8 +399,10 @@ namespace img {
 
     virtual long writeCell(const vector<DT>& value, long row) {
       checkWidth(value);
-      if (v.size() < row+1) v.resize(row+1);
-      v[row].reserve(width);
+      if (v.size() < row+1) {
+	// Fill out array with vectors of proper size
+	insertRows(v.size(), row-v.size());
+      }
       // Use normal variable-length array writer
       long out = Base::writeCell(value, row);
       // Fill out cell with null values as needed to meet fixed array length
@@ -413,7 +415,7 @@ namespace img {
     virtual long writeCells(const vector<vector<DT> >& values, long rowStart=0) {
       // extend column to hold data
       if (rowStart + values.size() > v.size()) 
-	v.resize(rowStart+values.size(), vector<DT>(width));
+	insertRows(v.size(), rowStart + values.size() - v.size());
       for (int i=0; i<values.size(); i++)
 	writeCell(values[i], i+rowStart);
       return v.size();
@@ -427,6 +429,13 @@ namespace img {
       else
 	v.insert(v.begin()+insertBeforeRow, insertNumber, vector<DT>(width));
       return v.size();
+    }
+
+    virtual void resize(long newSize) {
+      if (newSize > v.size())
+	insertRows(v.size(), newSize - v.size());  //growing
+      else if (newSize < v.size())
+	v.resize(newSize); // shrinking
     }
   };
 
